@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Build outputs
+dist/
+.output/
+.nuxt/
+.next/
+coverage/
+
+# Logs
+*.log
+logs/
+
+# OS and IDE
+.DS_Store
+.idea/
+.vscode/
+
+# Secrets and certificates
+*.pem
+*.key
+*.crt
