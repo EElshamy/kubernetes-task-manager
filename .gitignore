@@ -27,3 +27,4 @@ logs/
 *.pem
 *.key
 *.crt
+*.tsbuildinfo
