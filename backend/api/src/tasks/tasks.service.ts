@@ -1,33 +1,26 @@
+
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateTaskDto } from './dto/create-task.dto.js';
 import { UpdateTaskDto } from './dto/update-task.dto.js';
-import type { Task } from './task.model.js';
+import { Task } from './task.model.js';
 
 @Injectable()
 export class TasksService {
-  private tasks: Task[] = [
-    {
-      id: 1,
-      title: 'Learn Kubernetes',
-      description: 'Understand Kubernetes fundamentals',
-      status: 'in-progress',
-    },
-    {
-      id: 2,
-      title: 'Build Task Manager API',
-      description: 'Create the backend using NestJS',
-      status: 'todo',
-    },
-  ];
+  constructor(
+    @InjectRepository(Task)
+    private readonly tasksRepository: Repository<Task>,
+  ) {}
 
-  private nextId = 3;
-
-  findAll(): Task[] {
-    return this.tasks;
+  findAll(): Promise<Task[]> {
+    return this.tasksRepository.find({
+      order: { id: 'ASC' },
+    });
   }
 
-  findOne(id: number): Task {
-    const task = this.tasks.find((task) => task.id === id);
+  async findOne(id: number): Promise<Task> {
+    const task = await this.tasksRepository.findOneBy({ id });
 
     if (!task) {
       throw new NotFoundException(`Task with id ${id} not found`);
@@ -36,39 +29,23 @@ export class TasksService {
     return task;
   }
 
-  create(createTaskDto: CreateTaskDto): Task {
-    const newTask: Task = {
-      id: this.nextId++,
-      title: createTaskDto.title,
-      description: createTaskDto.description,
-      status: createTaskDto.status,
-    };
-
-    this.tasks.push(newTask);
-
-    return newTask;
+  create(createTaskDto: CreateTaskDto): Promise<Task> {
+    const task = this.tasksRepository.create(createTaskDto);
+    return this.tasksRepository.save(task);
   }
 
-  update(id: number, updateTaskDto: UpdateTaskDto): Task {
-    const task = this.findOne(id);
-    const updatedTask: Task = {
-      id: task.id,
-      title: updateTaskDto.title ?? task.title,
-      description: updateTaskDto.description ?? task.description,
-      status: updateTaskDto.status ?? task.status,
-    };
+  async update(id: number, updateTaskDto: UpdateTaskDto): Promise<Task> {
+    const task = await this.findOne(id);
 
-    this.tasks = this.tasks.map((current) =>
-      current.id === id ? updatedTask : current,
-    );
+    Object.assign(task, updateTaskDto);
 
-    return updatedTask;
+    return this.tasksRepository.save(task);
   }
 
-  remove(id: number): Task {
-    const task = this.findOne(id);
+  async remove(id: number): Promise<Task> {
+    const task = await this.findOne(id);
 
-    this.tasks = this.tasks.filter((current) => current.id !== id);
+    await this.tasksRepository.remove(task);
 
     return task;
   }
