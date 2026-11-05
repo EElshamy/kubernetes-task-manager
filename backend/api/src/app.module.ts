@@ -26,7 +26,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
         password: config.get<string>('DATABASE_PASSWORD'),
         database: config.get<string>('DATABASE_NAME'),
         autoLoadEntities: true,
-        synchronize: config.get<string>('NODE_ENV') !== 'production',
+        synchronize: false,
       }),
     }),
 
